@@ -21,6 +21,17 @@
           "otp_code": "Code"
         }
       },
+      "backup_share": {
+        "title": "Synology DSM: Backup location",
+        "data": {
+          "backup_share": "Shared folder",
+          "backup_path": "Path"
+        },
+        "data_description": {
+          "backup_share": "Select the shared folder, where the automatic Home-Assistant backup should be stored.",
+          "backup_path": "Define the path on the selected shared folder (will automatically be created, if not exist)."
+        }
+      },
       "link": {
         "description": "Do you want to set up {name} ({host})?",
         "data": {
@@ -173,7 +184,7 @@
   "services": {
     "reboot": {
       "name": "Reboot",
-      "description": "Reboots the NAS. This service is deprecated and will be removed in future release. Please use the corresponding button entity.",
+      "description": "Reboots the NAS. This action is deprecated and will be removed in future release. Please use the corresponding button entity.",
       "fields": {
         "serial": {
           "name": "Serial",
@@ -183,7 +194,7 @@
     },
     "shutdown": {
       "name": "Shutdown",
-      "description": "Shutdowns the NAS. This service is deprecated and will be removed in future release. Please use the corresponding button entity.",
+      "description": "Shutdowns the NAS. This action is deprecated and will be removed in future release. Please use the corresponding button entity.",
       "fields": {
         "serial": {
           "name": "[%key:component::synology_dsm::services::reboot::fields::serial::name%]",

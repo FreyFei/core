@@ -1,4 +1,5 @@
 """Models for SQLAlchemy."""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
@@ -488,13 +489,11 @@ class StatisticsRuns(Base):  # type: ignore[misc,valid-type]
 
 
 @overload
-def process_timestamp(ts: None) -> None:
-    ...
+def process_timestamp(ts: None) -> None: ...
 
 
 @overload
-def process_timestamp(ts: datetime) -> datetime:
-    ...
+def process_timestamp(ts: datetime) -> datetime: ...
 
 
 def process_timestamp(ts: datetime | None) -> datetime | None:
@@ -508,13 +507,11 @@ def process_timestamp(ts: datetime | None) -> datetime | None:
 
 
 @overload
-def process_timestamp_to_utc_isoformat(ts: None) -> None:
-    ...
+def process_timestamp_to_utc_isoformat(ts: None) -> None: ...
 
 
 @overload
-def process_timestamp_to_utc_isoformat(ts: datetime) -> str:
-    ...
+def process_timestamp_to_utc_isoformat(ts: datetime) -> str: ...
 
 
 def process_timestamp_to_utc_isoformat(ts: datetime | None) -> str | None:
@@ -532,12 +529,12 @@ class LazyState(State):
     """A lazy version of core State."""
 
     __slots__ = [
-        "_row",
+        "_attr_cache",
         "_attributes",
+        "_context",
         "_last_changed",
         "_last_updated",
-        "_context",
-        "_attr_cache",
+        "_row",
     ]
 
     def __init__(  # pylint: disable=super-init-not-called
@@ -656,7 +653,7 @@ class LazyState(State):
             "last_updated": last_updated_isoformat,
         }
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Return the comparison."""
         return (
             other.__class__ in [self.__class__, State]

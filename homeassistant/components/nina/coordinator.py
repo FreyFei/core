@@ -1,4 +1,5 @@
 """DataUpdateCoordinator for the nina integration."""
+
 from __future__ import annotations
 
 import asyncio
@@ -26,6 +27,7 @@ class NinaWarningData:
     severity: str
     recommended_actions: str
     affected_areas: str
+    web: str
     sent: str
     start: str
     expires: str
@@ -126,6 +128,7 @@ class NINADataUpdateCoordinator(
                     raw_warn.severity,
                     " ".join([str(action) for action in raw_warn.recommended_actions]),
                     affected_areas_string,
+                    raw_warn.web or "",
                     raw_warn.sent or "",
                     raw_warn.start or "",
                     raw_warn.expires or "",

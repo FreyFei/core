@@ -1,4 +1,5 @@
 """Helper and coordinator for refoss."""
+
 from __future__ import annotations
 
 from datetime import timedelta
@@ -33,6 +34,11 @@ class RefossDataUpdateCoordinator(DataUpdateCoordinator[None]):
             self.last_update_success = True
             self._error_count = 0
         except DeviceTimeoutError:
+            _LOGGER.debug(
+                "Update device %s status timeout,ip: %s",
+                self.device.dev_name,
+                self.device.inner_ip,
+            )
             self._error_count += 1
 
             if self._error_count >= MAX_ERRORS:

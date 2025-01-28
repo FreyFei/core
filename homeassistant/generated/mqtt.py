@@ -10,8 +10,16 @@ MQTT = {
     "dsmr_reader": [
         "dsmr/#",
     ],
+    "esphome": [
+        "esphome/discover/#",
+    ],
     "fully_kiosk": [
         "fully/deviceInfo/+",
+    ],
+    "qbus": [
+        "cloudapp/QBUSMQTTGW/state",
+        "cloudapp/QBUSMQTTGW/config",
+        "cloudapp/QBUSMQTTGW/+/state",
     ],
     "tasmota": [
         "tasmota/discovery/#",

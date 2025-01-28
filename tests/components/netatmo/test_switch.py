@@ -1,4 +1,5 @@
 """The tests for Netatmo switch."""
+
 from unittest.mock import AsyncMock, patch
 
 from syrupy import SnapshotAssertion
@@ -10,7 +11,7 @@ from homeassistant.components.switch import (
 )
 from homeassistant.const import ATTR_ENTITY_ID, Platform
 from homeassistant.core import HomeAssistant
-import homeassistant.helpers.entity_registry as er
+from homeassistant.helpers import entity_registry as er
 
 from .common import selected_platforms, snapshot_platform_entities
 

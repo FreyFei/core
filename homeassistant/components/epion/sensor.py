@@ -1,4 +1,5 @@
 """Support for Epion API."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -9,7 +10,6 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONCENTRATION_PARTS_PER_MILLION,
     PERCENTAGE,
@@ -22,7 +22,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .coordinator import EpionCoordinator
+from .coordinator import EpionConfigEntry, EpionCoordinator
 
 SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     SensorEntityDescription(
@@ -58,11 +58,11 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: EpionConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Add an Epion entry."""
-    coordinator: EpionCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
 
     entities = [
         EpionSensor(coordinator, epion_device_id, description)
@@ -88,9 +88,9 @@ class EpionSensor(CoordinatorEntity[EpionCoordinator], SensorEntity):
         super().__init__(coordinator)
         self._epion_device_id = epion_device_id
         self.entity_description = description
-        self.unique_id = f"{epion_device_id}_{description.key}"
+        self._attr_unique_id = f"{epion_device_id}_{description.key}"
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, self._epion_device_id)},
+            identifiers={(DOMAIN, epion_device_id)},
             manufacturer="Epion",
             name=self.device.get("deviceName"),
             sw_version=self.device.get("fwVersion"),

@@ -1,4 +1,5 @@
 """Constants for the Bluetooth integration."""
+
 from __future__ import annotations
 
 from typing import Final
@@ -15,6 +16,12 @@ DOMAIN = "bluetooth"
 CONF_ADAPTER = "adapter"
 CONF_DETAILS = "details"
 CONF_PASSIVE = "passive"
+
+
+CONF_SOURCE: Final = "source"
+CONF_SOURCE_DOMAIN: Final = "source_domain"
+CONF_SOURCE_MODEL: Final = "source_model"
+CONF_SOURCE_CONFIG_ENTRY_ID: Final = "source_config_entry_id"
 
 
 SOURCE_LOCAL: Final = "local"

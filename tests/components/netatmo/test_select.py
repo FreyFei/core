@@ -1,4 +1,5 @@
 """The tests for the Netatmo climate platform."""
+
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -16,7 +17,7 @@ from homeassistant.const import (
     Platform,
 )
 from homeassistant.core import HomeAssistant
-import homeassistant.helpers.entity_registry as er
+from homeassistant.helpers import entity_registry as er
 
 from .common import selected_platforms, simulate_webhook, snapshot_platform_entities
 

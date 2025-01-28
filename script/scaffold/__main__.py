@@ -1,4 +1,5 @@
 """Validate manifests."""
+
 import argparse
 from pathlib import Path
 import subprocess
@@ -24,12 +25,10 @@ def get_arguments() -> argparse.Namespace:
         "--integration", type=valid_integration, help="Integration to target."
     )
 
-    arguments = parser.parse_args()
-
-    return arguments
+    return parser.parse_args()
 
 
-def main():
+def main() -> int:
     """Scaffold an integration."""
     if not Path("requirements_all.txt").is_file():
         print("Run from project root")
