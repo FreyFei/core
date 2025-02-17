@@ -5,11 +5,11 @@ from typing import Any
 from technove import Station as TechnoVEStation, TechnoVE, TechnoVEConnectionError
 import voluptuous as vol
 
-from homeassistant.components import onboarding, zeroconf
-from homeassistant.config_entries import ConfigFlow
+from homeassistant.components import onboarding
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_MAC
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
 from .const import DOMAIN
 
@@ -23,7 +23,7 @@ class TechnoVEConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle a flow initiated by the user."""
         errors = {}
         if user_input is not None:
@@ -50,8 +50,8 @@ class TechnoVEConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_zeroconf(
-        self, discovery_info: zeroconf.ZeroconfServiceInfo
-    ) -> FlowResult:
+        self, discovery_info: ZeroconfServiceInfo
+    ) -> ConfigFlowResult:
         """Handle zeroconf discovery."""
         # Abort quick if the device with provided mac is already configured
         if mac := discovery_info.properties.get(CONF_MAC):
@@ -78,7 +78,7 @@ class TechnoVEConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_zeroconf_confirm(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle a flow initiated by zeroconf."""
         if user_input is not None or not onboarding.async_is_onboarded(self.hass):
             return self.async_create_entry(

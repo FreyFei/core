@@ -1,4 +1,5 @@
 """Switches for the Elexa Guardian integration."""
+
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping
@@ -11,10 +12,11 @@ from homeassistant.components.switch import SwitchEntity, SwitchEntityDescriptio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from . import GuardianData, ValveControllerEntity, ValveControllerEntityDescription
+from . import GuardianData
 from .const import API_VALVE_STATUS, API_WIFI_STATUS, DOMAIN
+from .entity import ValveControllerEntity, ValveControllerEntityDescription
 from .util import convert_exceptions_to_homeassistant_error
 from .valve import GuardianValveState
 
@@ -80,7 +82,6 @@ VALVE_CONTROLLER_DESCRIPTIONS = (
     ValveControllerSwitchDescription(
         key=SWITCH_KIND_ONBOARD_AP,
         translation_key="onboard_access_point",
-        icon="mdi:wifi",
         entity_category=EntityCategory.CONFIG,
         extra_state_attributes_fn=lambda data: {
             ATTR_CONNECTED_CLIENTS: data.get("ap_clients"),
@@ -94,7 +95,6 @@ VALVE_CONTROLLER_DESCRIPTIONS = (
     ValveControllerSwitchDescription(
         key=SWITCH_KIND_VALVE,
         translation_key="valve_controller",
-        icon="mdi:water",
         api_category=API_VALVE_STATUS,
         extra_state_attributes_fn=lambda data: {
             ATTR_AVG_CURRENT: data["average_current"],
@@ -110,7 +110,9 @@ VALVE_CONTROLLER_DESCRIPTIONS = (
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Guardian switches based on a config entry."""
     data: GuardianData = hass.data[DOMAIN][entry.entry_id]

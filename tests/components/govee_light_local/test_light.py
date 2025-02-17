@@ -1,6 +1,6 @@
 """Test Govee light local."""
 
-import asyncio
+from errno import EADDRINUSE, ENETDOWN
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from govee_local_api import GoveeDevice
@@ -10,7 +10,7 @@ from homeassistant.components.light import ATTR_SUPPORTED_COLOR_MODES, ColorMode
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 
-from .conftest import DEFAULT_CAPABILITEIS
+from .conftest import DEFAULT_CAPABILITIES
 
 from tests.common import MockConfigEntry
 
@@ -26,7 +26,7 @@ async def test_light_known_device(
             ip="192.168.1.100",
             fingerprint="asdawdqwdqwd",
             sku="H615A",
-            capabilities=DEFAULT_CAPABILITEIS,
+            capabilities=DEFAULT_CAPABILITIES,
         )
     ]
 
@@ -46,9 +46,7 @@ async def test_light_known_device(
         assert light is not None
 
         color_modes = light.attributes[ATTR_SUPPORTED_COLOR_MODES]
-        assert ColorMode.RGB in color_modes
-        assert ColorMode.BRIGHTNESS in color_modes
-        assert ColorMode.COLOR_TEMP in color_modes
+        assert set(color_modes) == {ColorMode.COLOR_TEMP, ColorMode.RGB}
 
         # Remove
         assert await hass.config_entries.async_remove(entry.entry_id)
@@ -98,7 +96,7 @@ async def test_light_remove(hass: HomeAssistant, mock_govee_api: AsyncMock) -> N
             ip="192.168.1.100",
             fingerprint="asdawdqwdqwd1",
             sku="H615A",
-            capabilities=DEFAULT_CAPABILITEIS,
+            capabilities=DEFAULT_CAPABILITIES,
         )
     ]
 
@@ -134,11 +132,67 @@ async def test_light_setup_retry(
         entry.add_to_hass(hass)
 
         with patch(
-            "homeassistant.components.govee_light_local.asyncio.timeout",
-            side_effect=asyncio.TimeoutError,
+            "homeassistant.components.govee_light_local.DISCOVERY_TIMEOUT",
+            0,
         ):
             await hass.config_entries.async_setup(entry.entry_id)
         assert entry.state is ConfigEntryState.SETUP_RETRY
+
+
+async def test_light_setup_retry_eaddrinuse(
+    hass: HomeAssistant, mock_govee_api: AsyncMock
+) -> None:
+    """Test adding an unknown device."""
+
+    mock_govee_api.start.side_effect = OSError()
+    mock_govee_api.start.side_effect.errno = EADDRINUSE
+    mock_govee_api.devices = [
+        GoveeDevice(
+            controller=mock_govee_api,
+            ip="192.168.1.100",
+            fingerprint="asdawdqwdqwd",
+            sku="H615A",
+            capabilities=DEFAULT_CAPABILITIES,
+        )
+    ]
+
+    with patch(
+        "homeassistant.components.govee_light_local.coordinator.GoveeController",
+        return_value=mock_govee_api,
+    ):
+        entry = MockConfigEntry(domain=DOMAIN)
+        entry.add_to_hass(hass)
+
+        await hass.config_entries.async_setup(entry.entry_id)
+        assert entry.state is ConfigEntryState.SETUP_RETRY
+
+
+async def test_light_setup_error(
+    hass: HomeAssistant, mock_govee_api: AsyncMock
+) -> None:
+    """Test adding an unknown device."""
+
+    mock_govee_api.start.side_effect = OSError()
+    mock_govee_api.start.side_effect.errno = ENETDOWN
+    mock_govee_api.devices = [
+        GoveeDevice(
+            controller=mock_govee_api,
+            ip="192.168.1.100",
+            fingerprint="asdawdqwdqwd",
+            sku="H615A",
+            capabilities=DEFAULT_CAPABILITIES,
+        )
+    ]
+
+    with patch(
+        "homeassistant.components.govee_light_local.coordinator.GoveeController",
+        return_value=mock_govee_api,
+    ):
+        entry = MockConfigEntry(domain=DOMAIN)
+        entry.add_to_hass(hass)
+
+        await hass.config_entries.async_setup(entry.entry_id)
+        assert entry.state is ConfigEntryState.SETUP_ERROR
 
 
 async def test_light_on_off(hass: HomeAssistant, mock_govee_api: MagicMock) -> None:
@@ -150,7 +204,7 @@ async def test_light_on_off(hass: HomeAssistant, mock_govee_api: MagicMock) -> N
             ip="192.168.1.100",
             fingerprint="asdawdqwdqwd",
             sku="H615A",
-            capabilities=DEFAULT_CAPABILITEIS,
+            capabilities=DEFAULT_CAPABILITIES,
         )
     ]
 
@@ -206,7 +260,7 @@ async def test_light_brightness(hass: HomeAssistant, mock_govee_api: MagicMock) 
             ip="192.168.1.100",
             fingerprint="asdawdqwdqwd",
             sku="H615A",
-            capabilities=DEFAULT_CAPABILITEIS,
+            capabilities=DEFAULT_CAPABILITIES,
         )
     ]
 
@@ -281,7 +335,7 @@ async def test_light_color(hass: HomeAssistant, mock_govee_api: MagicMock) -> No
             ip="192.168.1.100",
             fingerprint="asdawdqwdqwd",
             sku="H615A",
-            capabilities=DEFAULT_CAPABILITEIS,
+            capabilities=DEFAULT_CAPABILITIES,
         )
     ]
 

@@ -1,4 +1,5 @@
 """Support for fans through the SmartThings cloud API."""
+
 from __future__ import annotations
 
 from collections.abc import Sequence
@@ -10,15 +11,15 @@ from pysmartthings import Capability
 from homeassistant.components.fan import FanEntity, FanEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util.percentage import (
     percentage_to_ranged_value,
     ranged_value_to_percentage,
 )
 from homeassistant.util.scaling import int_states_in_range
 
-from . import SmartThingsEntity
 from .const import DATA_BROKERS, DOMAIN
+from .entity import SmartThingsEntity
 
 SPEED_RANGE = (1, 3)  # off is not included
 
@@ -26,16 +27,14 @@ SPEED_RANGE = (1, 3)  # off is not included
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Add fans for a config entry."""
     broker = hass.data[DOMAIN][DATA_BROKERS][config_entry.entry_id]
     async_add_entities(
-        [
-            SmartThingsFan(device)
-            for device in broker.devices.values()
-            if broker.any_assigned(device.device_id, "fan")
-        ]
+        SmartThingsFan(device)
+        for device in broker.devices.values()
+        if broker.any_assigned(device.device_id, "fan")
     )
 
 
@@ -60,9 +59,9 @@ def get_capabilities(capabilities: Sequence[str]) -> Sequence[str] | None:
 
     supported = [Capability.switch]
 
-    for capability in optional:
-        if capability in capabilities:
-            supported.append(capability)
+    supported.extend(
+        capability for capability in optional if capability in capabilities
+    )
 
     return supported
 
@@ -78,7 +77,7 @@ class SmartThingsFan(SmartThingsEntity, FanEntity):
         self._attr_supported_features = self._determine_features()
 
     def _determine_features(self):
-        flags = FanEntityFeature(0)
+        flags = FanEntityFeature.TURN_OFF | FanEntityFeature.TURN_ON
 
         if self._device.get_capability(Capability.fan_speed):
             flags |= FanEntityFeature.SET_SPEED

@@ -1,4 +1,5 @@
 """Support for Lutron switches."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -9,7 +10,7 @@ from pylutron import Button, Keypad, Led, Lutron, Output
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import DOMAIN, LutronData
 from .entity import LutronDevice, LutronKeypad
@@ -18,7 +19,7 @@ from .entity import LutronDevice, LutronKeypad
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Lutron switch platform.
 
@@ -43,13 +44,7 @@ class LutronSwitch(LutronDevice, SwitchEntity):
     """Representation of a Lutron Switch."""
 
     _lutron_device: Output
-
-    def __init__(
-        self, area_name: str, lutron_device: Output, controller: Lutron
-    ) -> None:
-        """Initialize the switch."""
-        self._prev_state = None
-        super().__init__(area_name, lutron_device, controller)
+    _attr_name = None
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
@@ -64,15 +59,13 @@ class LutronSwitch(LutronDevice, SwitchEntity):
         """Return the state attributes."""
         return {"lutron_integration_id": self._lutron_device.id}
 
-    @property
-    def is_on(self) -> bool:
-        """Return true if device is on."""
-        return self._lutron_device.last_level() > 0
+    def _request_state(self) -> None:
+        """Request the state from the device."""
+        _ = self._lutron_device.level
 
-    def update(self) -> None:
-        """Call when forcing a refresh of the device."""
-        if self._prev_state is None:
-            self._prev_state = self._lutron_device.level > 0
+    def _update_attrs(self) -> None:
+        """Update the state attributes."""
+        self._attr_is_on = self._lutron_device.last_level() > 0
 
 
 class LutronLed(LutronKeypad, SwitchEntity):
@@ -110,12 +103,10 @@ class LutronLed(LutronKeypad, SwitchEntity):
             "led": self._lutron_device.name,
         }
 
-    @property
-    def is_on(self) -> bool:
-        """Return true if device is on."""
-        return self._lutron_device.last_state
+    def _request_state(self) -> None:
+        """Request the state from the device."""
+        _ = self._lutron_device.state
 
-    def update(self) -> None:
-        """Call when forcing a refresh of the device."""
-        # The following property getter actually triggers an update in Lutron
-        self._lutron_device.state  # pylint: disable=pointless-statement
+    def _update_attrs(self) -> None:
+        """Update the state attributes."""
+        self._attr_is_on = self._lutron_device.last_state

@@ -1,4 +1,5 @@
 """Support for Synology DSM binary sensors."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -14,7 +15,7 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_DISKS, EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import SynoApi
 from .const import DOMAIN
@@ -27,7 +28,7 @@ from .entity import (
 from .models import SynologyDSMData
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class SynologyDSMBinarySensorEntityDescription(
     BinarySensorEntityDescription, SynologyDSMEntityDescription
 ):
@@ -62,12 +63,15 @@ STORAGE_DISK_BINARY_SENSORS: tuple[SynologyDSMBinarySensorEntityDescription, ...
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Synology NAS binary sensor."""
     data: SynologyDSMData = hass.data[DOMAIN][entry.unique_id]
     api = data.api
     coordinator = data.coordinator_central
+    assert api.storage is not None
 
     entities: list[SynoDSMSecurityBinarySensor | SynoDSMStorageBinarySensor] = [
         SynoDSMSecurityBinarySensor(api, coordinator, description)
@@ -115,12 +119,13 @@ class SynoDSMSecurityBinarySensor(SynoDSMBinarySensor):
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
-        return bool(self._api.security)
+        return bool(self._api.security) and super().available
 
     @property
     def extra_state_attributes(self) -> dict[str, str]:
         """Return security checks details."""
-        return self._api.security.status_by_check  # type: ignore[no-any-return]
+        assert self._api.security is not None
+        return self._api.security.status_by_check
 
 
 class SynoDSMStorageBinarySensor(SynologyDSMDeviceEntity, SynoDSMBinarySensor):

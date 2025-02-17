@@ -1,4 +1,5 @@
 """Vodafone Station buttons."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -13,26 +14,19 @@ from homeassistant.components.button import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import _LOGGER, DOMAIN
 from .coordinator import VodafoneStationRouter
 
 
-@dataclass(frozen=True)
-class VodafoneStationBaseEntityDescriptionMixin:
-    """Mixin to describe a Button entity."""
+@dataclass(frozen=True, kw_only=True)
+class VodafoneStationEntityDescription(ButtonEntityDescription):
+    """Vodafone Station entity description."""
 
     press_action: Callable[[VodafoneStationRouter], Any]
     is_suitable: Callable[[dict], bool]
-
-
-@dataclass(frozen=True)
-class VodafoneStationEntityDescription(
-    ButtonEntityDescription, VodafoneStationBaseEntityDescriptionMixin
-):
-    """Vodafone Station entity description."""
 
 
 BUTTON_TYPES: Final = (
@@ -73,7 +67,9 @@ BUTTON_TYPES: Final = (
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up entry."""
     _LOGGER.debug("Setting up Vodafone Station buttons")

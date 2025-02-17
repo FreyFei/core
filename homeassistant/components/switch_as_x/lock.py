@@ -1,4 +1,5 @@
 """Lock support for switch entities."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -13,11 +14,9 @@ from homeassistant.const import (
     SERVICE_TURN_ON,
     STATE_ON,
 )
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import Event, EventStateChangedData, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import EventStateChangedData
-from homeassistant.helpers.typing import EventType
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import CONF_INVERT
 from .entity import BaseInvertableEntity
@@ -26,7 +25,7 @@ from .entity import BaseInvertableEntity
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Initialize Lock Switch config entry."""
     registry = er.async_get(hass)
@@ -73,7 +72,7 @@ class LockSwitch(BaseInvertableEntity, LockEntity):
 
     @callback
     def async_state_changed_listener(
-        self, event: EventType[EventStateChangedData] | None = None
+        self, event: Event[EventStateChangedData] | None = None
     ) -> None:
         """Handle child updates."""
         super().async_state_changed_listener(event)

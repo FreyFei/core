@@ -1,4 +1,5 @@
 """The lookin integration."""
+
 from __future__ import annotations
 
 import asyncio
@@ -101,7 +102,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         lookin_device = await lookin_protocol.get_info()
         devices = await lookin_protocol.get_devices()
-    except (asyncio.TimeoutError, aiohttp.ClientError, NoUsableService) as ex:
+    except (TimeoutError, aiohttp.ClientError, NoUsableService) as ex:
         raise ConfigEntryNotReady from ex
 
     if entry.unique_id != (found_uuid := lookin_device.id.upper()):
@@ -121,6 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         coordinator_class = LookinDataUpdateCoordinator[MeteoSensor]
         meteo_coordinator = coordinator_class(
             hass,
+            entry,
             push_coordinator,
             name=entry.title,
             update_method=lookin_protocol.get_meteo_sensor,
@@ -139,6 +141,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             updater = _async_remote_updater(lookin_protocol, uuid)
         coordinator = LookinDataUpdateCoordinator(
             hass,
+            entry,
             push_coordinator,
             name=f"{entry.title} {uuid}",
             update_method=updater,

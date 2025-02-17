@@ -1,4 +1,5 @@
 """Support for Lutron scenes."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -8,7 +9,7 @@ from pylutron import Button, Keypad, Lutron
 from homeassistant.components.scene import Scene
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import DOMAIN, LutronData
 from .entity import LutronKeypad
@@ -17,7 +18,7 @@ from .entity import LutronKeypad
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Lutron scene platform.
 
@@ -27,11 +28,8 @@ async def async_setup_entry(
     entry_data: LutronData = hass.data[DOMAIN][config_entry.entry_id]
 
     async_add_entities(
-        [
-            LutronScene(area_name, keypad, device, entry_data.client)
-            for area_name, keypad, device, led in entry_data.scenes
-        ],
-        True,
+        LutronScene(area_name, keypad, device, entry_data.client)
+        for area_name, keypad, device, led in entry_data.scenes
     )
 
 
@@ -53,4 +51,4 @@ class LutronScene(LutronKeypad, Scene):
 
     def activate(self, **kwargs: Any) -> None:
         """Activate the scene."""
-        self._lutron_device.press()
+        self._lutron_device.tap()

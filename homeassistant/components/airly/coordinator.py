@@ -1,4 +1,5 @@
 """DataUpdateCoordinator for the Airly integration."""
+
 from asyncio import timeout
 from datetime import timedelta
 import logging
@@ -9,6 +10,7 @@ from aiohttp.client_exceptions import ClientConnectorError
 from airly import Airly
 from airly.exceptions import AirlyError
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
@@ -25,6 +27,8 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+type AirlyConfigEntry = ConfigEntry[AirlyDataUpdateCoordinator]
 
 
 def set_update_interval(instances_count: int, requests_remaining: int) -> timedelta:
@@ -54,12 +58,15 @@ def set_update_interval(instances_count: int, requests_remaining: int) -> timede
     return interval
 
 
-class AirlyDataUpdateCoordinator(DataUpdateCoordinator):
+class AirlyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, str | float | int]]):
     """Define an object to hold Airly data."""
+
+    config_entry: AirlyConfigEntry
 
     def __init__(
         self,
         hass: HomeAssistant,
+        config_entry: AirlyConfigEntry,
         session: ClientSession,
         api_key: str,
         latitude: float,
@@ -75,7 +82,13 @@ class AirlyDataUpdateCoordinator(DataUpdateCoordinator):
         self.airly = Airly(api_key, session, language=language)
         self.use_nearest = use_nearest
 
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval)
+        super().__init__(
+            hass,
+            _LOGGER,
+            config_entry=config_entry,
+            name=DOMAIN,
+            update_interval=update_interval,
+        )
 
     async def _async_update_data(self) -> dict[str, str | float | int]:
         """Update data via library."""
